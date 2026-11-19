@@ -1,6 +1,6 @@
 [package]
 name = "the-os-gitui"
-version = "0.1.0"
+version = "0.2.0"
 description = "Free, open-source Git GUI"
 license = "MIT"
 edition = "2021"

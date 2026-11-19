@@ -3621,7 +3621,7 @@ dependencies = [
 
 [[package]]
 name = "the-os-gitui"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "portable-pty",
  "serde",

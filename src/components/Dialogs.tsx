@@ -3,12 +3,17 @@ import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useStore, type Dialog } from "../store";
 import { api } from "../lib/git";
+import { matchProfile, toConfig } from "../lib/profiles";
+import { AgentDialog } from "./AgentDialog";
+import { ProfilesDialog } from "./ProfilesDialog";
 
 export function Dialogs() {
   const d = useStore((s) => s.dialog);
   if (!d) return null;
   if (d.kind === "prompt") return <PromptDialog d={d} />;
   if (d.kind === "confirm") return <ConfirmDialog d={d} />;
+  if (d.kind === "agent") return <AgentDialog cwd={d.cwd} />;
+  if (d.kind === "profiles") return <ProfilesDialog />;
   return <CloneDialog />;
 }
 
@@ -87,10 +92,15 @@ function CloneDialog() {
   const [progress, setProgress] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const profiles = useStore((s) => s.profiles);
+  const [profId, setProfId] = useState<string>("");
+  const [profTouched, setProfTouched] = useState(false);
 
   useEffect(() => {
     if (!touched) setName(repoNameFromUrl(url));
-  }, [url, touched]);
+    if (!profTouched) setProfId(matchProfile(profiles, [url])?.id ?? "");
+  }, [url, touched, profiles, profTouched]);
+  const profile = profiles.find((p) => p.id === profId) ?? null;
 
   useEffect(() => {
     const un = listen<string>("clone-progress", (e) => setProgress(e.payload));
@@ -108,7 +118,7 @@ function CloneDialog() {
     setErr("");
     try {
       const dest = dir.replace(/[\\/]+$/, "") + "/" + name.trim();
-      const info = await api.clone(url.trim(), dest);
+      const info = await api.clone(url.trim(), dest, profile ? toConfig(profile) : null);
       localStorage.setItem("cloneDir", dir);
       setDialog(null);
       await openPath(info.path);
@@ -131,6 +141,13 @@ function CloneDialog() {
       </div>
       <label className="field-label">Folder name</label>
       <input className="field" value={name} onChange={(e) => { setTouched(true); setName(e.target.value); }} />
+      <label className="field-label">Account (git profile)</label>
+      <select className="field" value={profId} onChange={(e) => { setProfTouched(true); setProfId(e.target.value); }}>
+        <option value="">Default (global git settings)</option>
+        {profiles.map((p) => (
+          <option key={p.id} value={p.id}>{p.label} · {p.email}</option>
+        ))}
+      </select>
       {busy && <div className="progress mono">{progress || "Starting…"}</div>}
       {err && <div className="error-box mono">{err}</div>}
       <div className="modal-actions">

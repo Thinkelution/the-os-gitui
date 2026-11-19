@@ -16,6 +16,7 @@ import { HistoryView } from "./components/HistoryView";
 import { BlameView } from "./components/BlameView";
 import { RebaseView } from "./components/RebaseView";
 import { Splitter } from "./components/Splitter";
+import { Dock, startPtyEvents } from "./components/Dock";
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 const stored = (k: string, d: number) => Number(localStorage.getItem(k)) || d;
@@ -42,6 +43,7 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
+    startPtyEvents();
     const st = useStore.getState();
     const restore = () => {
       if (st.active) st.activate(st.active);
@@ -62,6 +64,8 @@ export default function App() {
       if (!el.closest("input, textarea, .selectable")) e.preventDefault();
     };
     const keys = (e: KeyboardEvent) => {
+      // Terminals and agents own every key (Ctrl+R, Ctrl+W, Esc…).
+      if ((e.target as HTMLElement | null)?.closest?.(".term")) return;
       const s = useStore.getState();
       const mod = e.ctrlKey || e.metaKey;
       if (e.key === "F5" || (mod && e.key.toLowerCase() === "r")) {
@@ -113,7 +117,10 @@ export default function App() {
               }}
             />
             <div className="center">
-              <Center />
+              <div className="center-main">
+                <Center />
+              </div>
+              <Dock />
             </div>
             <Splitter
               onStart={() => (start.current = panelW)}

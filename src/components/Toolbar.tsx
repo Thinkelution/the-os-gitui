@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useStore } from "../store";
 import { api, type PullMode } from "../lib/git";
 import { Icon, type IconName } from "./Icon";
+import { currentProfile, matchProfile } from "../lib/profiles";
 
 const PULL_LABEL: Record<PullMode, string> = {
   "ff-only": "Fast-forward only",
@@ -42,11 +43,31 @@ export function Toolbar() {
   const setTheme = useStore((s) => s.setTheme);
   const setPalette = useStore((s) => s.setPalette);
   const toast = useStore((s) => s.toast);
+  const identity = useStore((s) => s.identity);
+  const profiles = useStore((s) => s.profiles);
+  const useProfile = useStore((s) => s.useProfile);
+  const setDialog = useStore((s) => s.setDialog);
+  const launch = useStore((s) => s.launch);
   const [pullMode, setPullMode] = useState<PullMode>(
     () => (localStorage.getItem("pullMode") as PullMode | null) ?? "ff-only",
   );
 
   const name = tabs.find((t) => t.path === active)?.name ?? "";
+  const cur = currentProfile(profiles, identity);
+  const suggested = identity ? matchProfile(profiles, identity.remotes) : null;
+  const mismatch = !!suggested && suggested.id !== cur?.id;
+
+  const profileMenu = (e: React.MouseEvent) =>
+    showMenu(anchor(e), [
+      ...(mismatch ? [{ label: `Use suggested: ${suggested!.label}`, action: () => void useProfile(suggested!) }, { sep: true }] : []),
+      ...profiles.map((p) => ({
+        label: (p.id === cur?.id ? "✓  " : "     ") + `${p.label}  ·  ${p.email}`,
+        disabled: p.id === cur?.id,
+        action: () => void useProfile(p),
+      })),
+      ...(profiles.length ? [{ sep: true }] : []),
+      { label: "Manage profiles…", action: () => setDialog({ kind: "profiles" }) },
+    ]);
   const pull = (m: PullMode) => op("Pull", { op: "pull", mode: m });
 
   const pullMenu = (e: React.MouseEvent) =>
@@ -114,6 +135,15 @@ export function Toolbar() {
           {!!status?.ahead && <span className="ab">↑{status.ahead}</span>}
           {!!status?.behind && <span className="ab">↓{status.behind}</span>}
         </div>
+        <button
+          className={"profile-chip" + (mismatch ? " warn" : "")}
+          title={identity ? `${identity.name} <${identity.email}>${identity.local ? "" : " (global)"}` : ""}
+          onClick={profileMenu}
+        >
+          <Icon name="user" size={14} />
+          <span className="ellipsis">{cur?.label ?? (identity?.email || "No identity")}</span>
+          {mismatch && <span className="warn-dot" />}
+        </button>
       </div>
 
       <div className="tb-center">
@@ -134,7 +164,8 @@ export function Toolbar() {
           <TB icon="pop" label="Pop" title="Pop the latest stash" disabled={b || !hasStash} onClick={() => void op("Pop stash", { op: "stashPop", index: "stash@{0}" })} />
         </div>
         <div className="tb-group">
-          <TB icon="terminal" label="Terminal" title="Open a terminal in this repo" onClick={() => active && api.openTerminal(active).catch(fail)} />
+          <TB icon="sparkle" label="AI Agent" title="Start Claude Code, Codex or another agent" onClick={() => setDialog({ kind: "agent" })} />
+          <TB icon="terminal" label="Terminal" title="Open a terminal in this repo (right-click: outside the app)" onClick={() => active && void launch(active, { kind: "shell" }, "Terminal")} />
           <TB icon="folder" label="Folder" title="Show this repo in the file manager" onClick={() => active && api.reveal(active).catch(fail)} />
         </div>
       </div>

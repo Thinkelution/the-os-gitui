@@ -94,7 +94,17 @@ export const api = {
   startupPath: () => invoke<string | null>("startup_path"),
   open: (path: string) => invoke<RepoInfo>("repo_open", { path }),
   init: (path: string) => invoke<RepoInfo>("repo_init", { path }),
-  clone: (url: string, dest: string) => invoke<RepoInfo>("repo_clone", { url, dest }),
+  clone: (url: string, dest: string, profile: ProfileConfig | null = null) => invoke<RepoInfo>("repo_clone", { url, dest, profile }),
+  identity: (repo: string) => invoke<Identity>("get_identity", { repo }),
+  applyProfile: (repo: string, profile: ProfileConfig) => invoke<void>("apply_profile", { repo, profile }),
+  worktrees: (repo: string) => invoke<Worktree[]>("worktree_list", { repo }),
+  worktreeAdd: (repo: string, branch: string, base: string | null) => invoke<string>("worktree_add", { repo, branch, base }),
+  worktreeRemove: (repo: string, path: string, force: boolean) => invoke<void>("worktree_remove", { repo, path, force }),
+  agents: () => invoke<AgentInfo[]>("agents_detect"),
+  ptyLaunch: (cwd: string, launch: Launch, cols: number, rows: number) => invoke<number>("pty_launch", { cwd, launch, cols, rows }),
+  ptyWrite: (id: number, data: string) => invoke<void>("pty_write", { id, data }),
+  ptyResize: (id: number, cols: number, rows: number) => invoke<void>("pty_resize", { id, cols, rows }),
+  ptyKill: (id: number) => invoke<void>("pty_kill", { id }),
   log: (repo: string, limit: number) => invoke<Commit[]>("get_log", { repo, limit }),
   status: (repo: string) => invoke<Status>("get_status", { repo }),
   refs: (repo: string) => invoke<Refs>("get_refs", { repo }),
@@ -126,3 +136,14 @@ export interface Blame { lines: BlameLine[]; commits: Record<string, { author: s
 export interface TodoCommit { hash: string; subject: string; body: string; author: string; merge: boolean }
 export type TodoAction = "pick" | "reword" | "squash" | "fixup" | "drop";
 export interface TodoItem { hash: string; action: TodoAction; message: string | null }
+
+/** What the backend needs to apply a profile to a repo. */
+export interface ProfileConfig { userName: string; email: string; sshKey: string | null; host: string | null; hostUser: string | null }
+export interface Identity { name: string; email: string; local: boolean; sshCommand: string | null; remotes: string[] }
+export interface Worktree { path: string; head: string; branch: string | null; main: boolean; locked: boolean; prunable: boolean }
+export interface AgentInfo { id: string; name: string; installed: boolean; path: string | null; install: string | null; site: string }
+export type Launch =
+  | { kind: "shell" }
+  | { kind: "agent"; id: string; prompt: string | null }
+  | { kind: "install"; id: string }
+  | { kind: "custom"; command: string; prompt: string | null };

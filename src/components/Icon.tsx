@@ -35,6 +35,10 @@ const P: Record<string, string> = {
   clone: "M12 3v12M7 10l5 5 5-5M5 21h14",
   repo: "M5 4a2 2 0 0 1 2-2h12v18H7a2 2 0 0 0-2 2zM5 20a2 2 0 0 1 2-2h12",
   sparkle: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z",
+  user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0",
+  pencil: "M4 20h4L19 9l-4-4L4 16zM14 6l4 4",
+  trash: "M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3",
+  worktree: "M4 5h6v6H4zM14 13h6v6h-6zM7 11v4a2 2 0 0 0 2 2h5",
 };
 
 export type IconName = keyof typeof P;

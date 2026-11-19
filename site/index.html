@@ -3,96 +3,177 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OS GitUI · Free, open-source Git client</title>
-  <meta name="description" content="A free, open-source Git GUI for macOS, Linux and Windows. Commit graph, staging by line, branches, stashes, merge and rebase." />
+  <title>OS GitUI · Free Git client with built-in AI coding agents</title>
+  <meta name="description" content="A free, open-source Git GUI for macOS, Linux and Windows. Start Claude Code, Codex or Gemini in one click, each on its own branch. Commit graph, line staging, many git accounts." />
   <link rel="icon" href="icon.svg" />
   <style>
-    :root { --bg:#14161b; --bg2:#1d2027; --text:#e2e5ea; --dim:#959ba5; --accent:#4fb3ff; --pink:#ff6b9a; --border:#2d313a; }
+    :root { --bg:#0f1115; --bg2:#171a20; --bg3:#1f232b; --text:#e6e9ee; --dim:#98a0ab; --accent:#5b9dff; --pink:#ff6b9a; --green:#3fb950; --border:#2a2f38; }
     * { box-sizing: border-box; }
-    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-font-smoothing:antialiased; }
     a { color:var(--accent); text-decoration:none; }
-    .wrap { max-width:1100px; margin:0 auto; padding:0 24px; }
+    .wrap { max-width:1160px; margin:0 auto; padding:0 24px; }
     nav { display:flex; align-items:center; gap:12px; padding:20px 0; }
     nav img { width:32px; height:32px; }
     nav b { font-size:18px; }
-    nav .links { margin-left:auto; display:flex; gap:22px; }
-    .hero { text-align:center; padding:60px 0 30px; }
-    h1 { font-size:52px; line-height:1.1; margin:0 0 16px; letter-spacing:-0.02em; }
-    h1 span { background:linear-gradient(90deg,var(--accent),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent; }
-    .lead { color:var(--dim); font-size:20px; max-width:640px; margin:0 auto 32px; }
+    nav .links { margin-left:auto; display:flex; gap:24px; }
+    nav .links a { color:var(--dim); }
+    nav .links a:hover { color:var(--text); }
+    .glow { position:absolute; left:50%; top:0; width:1100px; height:620px; transform:translateX(-50%); background:radial-gradient(closest-side, rgba(91,157,255,.18), rgba(255,107,154,.06) 60%, transparent); pointer-events:none; z-index:-1; }
+    .hero { position:relative; text-align:center; padding:56px 0 20px; }
+    .tag { display:inline-flex; align-items:center; gap:8px; padding:5px 14px; border:1px solid var(--border); border-radius:999px; background:var(--bg2); color:var(--dim); font-size:14px; margin-bottom:22px; }
+    .tag b { color:var(--text); }
+    h1 { font-size:58px; line-height:1.05; margin:0 0 18px; letter-spacing:-0.03em; }
+    .grad { background:linear-gradient(90deg,var(--accent),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .lead { color:var(--dim); font-size:20px; max-width:700px; margin:0 auto 30px; }
     .btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
-    .btn { display:inline-block; padding:12px 22px; border-radius:8px; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-weight:600; }
+    .btn { display:inline-block; padding:12px 22px; border-radius:9px; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-weight:600; }
     .btn.main { background:#1f6feb; border-color:#1f6feb; color:#fff; }
-    .shot { margin:48px auto 0; border-radius:12px; border:1px solid var(--border); box-shadow:0 30px 80px rgba(0,0,0,.6); max-width:100%; display:block; }
-    h2 { font-size:30px; margin:80px 0 24px; text-align:center; }
-    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
-    .card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:20px; }
+    .agents { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:28px 0 0; }
+    .agents span { padding:5px 12px; border-radius:8px; background:var(--bg2); border:1px solid var(--border); font-size:14px; color:var(--dim); }
+    .agents span.on { color:var(--text); border-color:#2f4d7a; }
+    .shot { margin:44px auto 0; border-radius:12px; border:1px solid var(--border); box-shadow:0 30px 90px rgba(0,0,0,.65); max-width:100%; height:auto; display:block; }
+    h2 { font-size:36px; line-height:1.15; margin:0 0 14px; letter-spacing:-0.02em; }
+    .center { text-align:center; }
+    .sub { color:var(--dim); font-size:18px; max-width:640px; margin:0 auto 34px; }
+    section { padding:90px 0 0; }
+    .split { display:grid; grid-template-columns: 1fr 1.35fr; gap:44px; align-items:center; }
+    .split.rev { grid-template-columns: 1.35fr 1fr; }
+    .split img { width:100%; height:auto; border-radius:12px; border:1px solid var(--border); box-shadow:0 20px 60px rgba(0,0,0,.5); }
+    .eyebrow { color:var(--accent); font-weight:700; font-size:13px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px; }
+    .steps { list-style:none; padding:0; margin:20px 0 0; counter-reset:s; }
+    .steps li { counter-increment:s; position:relative; padding:0 0 16px 44px; color:var(--dim); }
+    .steps li b { color:var(--text); display:block; }
+    .steps li::before { content:counter(s); position:absolute; left:0; top:0; width:28px; height:28px; border-radius:50%; background:var(--bg3); border:1px solid var(--border); color:var(--accent); font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; }
+    .ticks { list-style:none; padding:0; margin:18px 0 0; }
+    .ticks li { padding:4px 0 4px 28px; position:relative; color:var(--dim); }
+    .ticks li::before { content:"✓"; position:absolute; left:0; color:var(--green); font-weight:700; }
+    .ticks li b { color:var(--text); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:16px; }
+    .card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; }
     .card h3 { margin:0 0 6px; font-size:17px; }
     .card p { margin:0; color:var(--dim); font-size:15px; }
-    .dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
-    .dl a { display:block; text-align:center; padding:22px; background:var(--bg2); border:1px solid var(--border); border-radius:10px; color:var(--text); }
-    .dl a b { display:block; font-size:18px; }
+    .card .ic { font-size:20px; margin-bottom:8px; display:block; }
+    .dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+    .dl a { display:block; text-align:center; padding:24px; background:var(--bg2); border:1px solid var(--border); border-radius:12px; color:var(--text); }
+    .dl a:hover { border-color:var(--accent); }
+    .dl a b { display:block; font-size:19px; }
     .dl a span { color:var(--dim); font-size:14px; }
-    .road li { margin:6px 0; color:var(--dim); }
+    .road li { margin:8px 0; color:var(--dim); }
     .road li b { color:var(--text); }
-    code { background:var(--bg2); padding:2px 6px; border-radius:4px; font-size:14px; }
-    footer { color:var(--dim); text-align:center; padding:60px 0 40px; font-size:14px; }
+    code { background:var(--bg3); padding:2px 6px; border-radius:5px; font-size:14px; }
+    footer { color:var(--dim); text-align:center; padding:80px 0 40px; font-size:14px; }
+    @media (max-width: 860px) { h1 { font-size:40px; } .split, .split.rev { grid-template-columns:1fr; } nav .links { display:none; } }
   </style>
 </head>
 <body>
+  <div class="glow"></div>
   <div class="wrap">
     <nav>
       <img src="icon.svg" alt="" />
       <b>OS GitUI</b>
       <div class="links">
+        <a href="#agents">AI agents</a>
+        <a href="#profiles">Profiles</a>
         <a href="#features">Features</a>
         <a href="#download">Download</a>
         <a href="https://github.com/Thinkelution/the-os-gitui">GitHub</a>
       </div>
     </nav>
 
-    <section class="hero">
-      <h1>The free <span>Git client</span><br />for every desktop.</h1>
-      <p class="lead">A fast, open-source Git GUI for macOS, Linux and Windows. See your whole history as a graph, stage single lines, and manage branches with a click.</p>
+    <section class="hero" style="padding-top:40px">
+      <div class="tag">New in v0.3 · <b>AI coding agents, built in</b></div>
+      <h1>The free Git client<br />with <span class="grad">AI agents built in</span>.</h1>
+      <p class="lead">Start Claude Code, Codex or Gemini with one click. Each agent works on its own branch, in its own folder, so your code stays safe. Review what it did in the commit graph.</p>
       <div class="btns">
-        <a class="btn main" href="#download">Download</a>
+        <a class="btn main" href="#download">Download free</a>
         <a class="btn" href="https://github.com/Thinkelution/the-os-gitui">View source</a>
       </div>
-      <img class="shot" src="screenshot.png" alt="OS GitUI showing a commit graph, branches and staged files" width="1456" height="939" />
+      <div class="agents">
+        <span class="on">Claude Code</span><span class="on">Codex CLI</span><span class="on">Gemini CLI</span>
+        <span class="on">GitHub Copilot CLI</span><span>OpenCode</span><span>Aider</span><span>Cursor Agent</span><span>Your own command</span>
+      </div>
+      <img class="shot" src="shot-agent.png" alt="OS GitUI with Claude Code running in the built-in terminal on its own branch" width="1456" height="939" />
+    </section>
+
+    <section id="agents">
+      <div class="split">
+        <div>
+          <div class="eyebrow">AI coding agents</div>
+          <h2>One click. One branch. No risk.</h2>
+          <ol class="steps">
+            <li><b>Click "AI Agent"</b>Pick Claude Code, Codex, Gemini or another agent.</li>
+            <li><b>Not installed? Click Install</b>The app runs the install command for you.</li>
+            <li><b>Give it a task, or don't</b>Type what you want. It is sent when the agent starts.</li>
+            <li><b>It gets its own branch and folder</b>A git worktree, so your files are never touched.</li>
+            <li><b>Watch it, then review</b>The agent runs in the built-in terminal. Its commits show in the graph.</li>
+          </ol>
+        </div>
+        <img src="shot-agent-dialog.png" alt="Start an AI coding agent dialog" width="660" height="566" loading="lazy" />
+      </div>
+    </section>
+
+    <section>
+      <div class="grid">
+        <div class="card"><span class="ic">⚡</span><h3>Many agents at once</h3><p>Run several agents side by side, each on its own branch. Switch between them in the terminal tabs.</p></div>
+        <div class="card"><span class="ic">🌿</span><h3>Worktrees made easy</h3><p>Every agent branch shows in the sidebar with a live dot. Open it in a tab, or remove it when done.</p></div>
+        <div class="card"><span class="ic">🖥️</span><h3>Built-in terminal</h3><p>A real terminal inside the app on Windows, macOS and Linux. Open a shell in any repo or worktree.</p></div>
+        <div class="card"><span class="ic">🔌</span><h3>Bring your own agent</h3><p>Add any command line tool as a custom agent, with your own flags and models.</p></div>
+      </div>
+    </section>
+
+    <section id="profiles">
+      <div class="split rev">
+        <img src="shot-profiles.png" alt="Git profiles: work and personal accounts" width="660" height="343" loading="lazy" />
+        <div>
+          <div class="eyebrow">Git profiles</div>
+          <h2>Work and personal accounts, on one computer.</h2>
+          <ul class="ticks">
+            <li><b>Commit as the right person</b> with name and email per repo.</li>
+            <li><b>Push with the right key</b> by picking an SSH key per profile.</li>
+            <li><b>Pick the right HTTPS account</b> for GitHub, GitLab or any host.</li>
+            <li><b>Automatic</b> for remotes like <code>github.com/acme</code>.</li>
+            <li><b>Choose a profile when you clone.</b></li>
+            <li><b>Safe.</b> Global git settings stay the same. No passwords are stored.</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
     <section id="features">
-      <h2>Everything you need for daily Git</h2>
+      <h2 class="center">Everything you need for daily Git</h2>
+      <p class="sub center">A fast, native-feeling client. It runs your real <code>git</code>, so hooks, SSH keys and signing just work.</p>
+      <img class="shot" style="margin:0 auto 32px" src="screenshot.png" alt="Commit graph with branches, tags and remotes" width="1456" height="939" loading="lazy" />
       <div class="grid">
-        <div class="card"><h3>Commit graph</h3><p>Colored lanes for every branch and merge. Smooth scrolling through tens of thousands of commits.</p></div>
+        <div class="card"><h3>Commit graph</h3><p>Colored lanes for every branch and merge. Smooth with tens of thousands of commits.</p></div>
         <div class="card"><h3>Stage by line</h3><p>Stage, unstage or discard whole files, single hunks, or just the lines you pick.</p></div>
-        <div class="card"><h3>Diff views</h3><p>Unified or side-by-side diffs for your changes and for any commit.</p></div>
-        <div class="card"><h3>Branches and tags</h3><p>Create, switch, rename, delete, merge and rebase from the sidebar or the graph.</p></div>
+        <div class="card"><h3>Interactive rebase</h3><p>Drag to reorder. Pick, reword, squash, fixup or drop commits.</p></div>
+        <div class="card"><h3>History and blame</h3><p>See every change to a file, even across renames, and who wrote each line.</p></div>
+        <div class="card"><h3>Branches and tags</h3><p>Create, switch, rename, delete, merge and rebase. Branches group into folders.</p></div>
         <div class="card"><h3>Remotes</h3><p>Fetch, pull (fast-forward, merge or rebase) and push, with ahead and behind counts.</p></div>
-        <div class="card"><h3>Commit tools</h3><p>Cherry-pick, revert, reset (soft, mixed, hard), amend and detached checkout.</p></div>
-        <div class="card"><h3>Stashes</h3><p>Stash with untracked files, then apply, pop or drop.</p></div>
-        <div class="card"><h3>Safe recovery</h3><p>Clear banners to abort or continue a merge, rebase, cherry-pick or revert.</p></div>
-        <div class="card"><h3>Uses your Git</h3><p>Runs the real <code>git</code>, so your hooks, SSH keys, credential helpers and signing just work.</p></div>
+        <div class="card"><h3>Conflicts</h3><p>Take mine or theirs per file. Clear abort and continue buttons.</p></div>
+        <div class="card"><h3>Command palette</h3><p>Press <code>Ctrl K</code> or <code>⌘ K</code> for any action, branch or file.</p></div>
+        <div class="card"><h3>Light and dark</h3><p>Two themes, resizable panels and tabs for many repos.</p></div>
       </div>
     </section>
 
     <section id="download">
-      <h2>Download</h2>
+      <h2 class="center">Download</h2>
+      <p class="sub center">Free and open source. Needs Git 2.31 or newer.</p>
       <div class="dl">
         <a href="https://github.com/Thinkelution/the-os-gitui/releases/latest"><b>macOS</b><span>Apple Silicon and Intel (.dmg)</span></a>
-        <a href="https://github.com/Thinkelution/the-os-gitui/releases/latest"><b>Windows</b><span>10 and 11 (.msi / .exe)</span></a>
+        <a href="https://github.com/Thinkelution/the-os-gitui/releases/latest"><b>Windows</b><span>10 and 11 (.exe / .msi)</span></a>
         <a href="https://github.com/Thinkelution/the-os-gitui/releases/latest"><b>Linux</b><span>.deb, .rpm and AppImage</span></a>
       </div>
-      <p style="text-align:center;color:var(--dim)">Needs Git 2.31 or newer installed on your computer.</p>
     </section>
 
     <section>
-      <h2>Coming next</h2>
-      <ul class="road">
-        <li><b>Interactive rebase</b>: reorder, squash and edit commits by drag and drop.</li>
-        <li><b>Merge conflict editor</b>: pick ours, theirs or both, line by line.</li>
+      <h2 class="center">Coming next</h2>
+      <ul class="road" style="max-width:640px;margin:0 auto">
+        <li><b>AI commit messages</b>: write the message from your staged changes.</li>
+        <li><b>AI review</b>: explain a diff, or review an agent's branch before you merge.</li>
         <li><b>Pull requests</b>: GitHub and GitLab reviews inside the app.</li>
-        <li><b>AI coding agent</b>: write commit messages, explain diffs, and run coding agents on branches.</li>
+        <li><b>Merge conflict editor</b>: pick lines from each side.</li>
       </ul>
     </section>
 

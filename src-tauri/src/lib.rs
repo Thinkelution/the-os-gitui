@@ -1,0 +1,29 @@
+mod commands;
+mod git;
+mod graph;
+
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![
+            commands::startup_path,
+            commands::repo_open,
+            commands::repo_init,
+            commands::repo_clone,
+            commands::get_log,
+            commands::get_status,
+            commands::get_refs,
+            commands::file_diff,
+            commands::commit_details,
+            commands::commit_file_diff,
+            commands::stage,
+            commands::unstage,
+            commands::discard,
+            commands::apply_patch,
+            commands::commit,
+            commands::last_message,
+            commands::git_op,
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running OS GitUI");
+}

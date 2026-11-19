@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OS GitUI · Free, open-source Git client</title>
+  <meta name="description" content="A free, open-source Git GUI for macOS, Linux and Windows. Commit graph, staging by line, branches, stashes, merge and rebase." />
+  <link rel="icon" href="icon.svg" />
+  <style>
+    :root { --bg:#14161b; --bg2:#1d2027; --text:#e2e5ea; --dim:#959ba5; --accent:#4fb3ff; --pink:#ff6b9a; --border:#2d313a; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+    a { color:var(--accent); text-decoration:none; }
+    .wrap { max-width:1100px; margin:0 auto; padding:0 24px; }
+    nav { display:flex; align-items:center; gap:12px; padding:20px 0; }
+    nav img { width:32px; height:32px; }
+    nav b { font-size:18px; }
+    nav .links { margin-left:auto; display:flex; gap:22px; }
+    .hero { text-align:center; padding:60px 0 30px; }
+    h1 { font-size:52px; line-height:1.1; margin:0 0 16px; letter-spacing:-0.02em; }
+    h1 span { background:linear-gradient(90deg,var(--accent),var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .lead { color:var(--dim); font-size:20px; max-width:640px; margin:0 auto 32px; }
+    .btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+    .btn { display:inline-block; padding:12px 22px; border-radius:8px; border:1px solid var(--border); background:var(--bg2); color:var(--text); font-weight:600; }
+    .btn.main { background:#1f6feb; border-color:#1f6feb; color:#fff; }
+    .shot { margin:48px auto 0; border-radius:12px; border:1px solid var(--border); box-shadow:0 30px 80px rgba(0,0,0,.6); max-width:100%; display:block; }
+    h2 { font-size:30px; margin:80px 0 24px; text-align:center; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+    .card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:20px; }
+    .card h3 { margin:0 0 6px; font-size:17px; }
+    .card p { margin:0; color:var(--dim); font-size:15px; }
+    .dl { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+    .dl a { display:block; text-align:center; padding:22px; background:var(--bg2); border:1px solid var(--border); border-radius:10px; color:var(--text); }
+    .dl a b { display:block; font-size:18px; }
+    .dl a span { color:var(--dim); font-size:14px; }
+    .road li { margin:6px 0; color:var(--dim); }
+    .road li b { color:var(--text); }
+    code { background:var(--bg2); padding:2px 6px; border-radius:4px; font-size:14px; }
+    footer { color:var(--dim); text-align:center; padding:60px 0 40px; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <img src="icon.svg" alt="" />
+      <b>OS GitUI</b>
+      <div class="links">
+        <a href="#features">Features</a>
+        <a href="#download">Download</a>
+        <a href="https://github.com/Thinkelution/the-os-gitui">GitHub</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <h1>The free <span>Git client</span><br />for every desktop.</h1>
+      <p class="lead">A fast, open-source Git GUI for macOS, Linux and Windows. See your whole history as a graph, stage single lines, and manage branches with a click.</p>
+      <div class="btns">
+        <a class="btn main" href="#download">Download</a>
+        <a class="btn" href="https://github.com/Thinkelution/the-os-gitui">View source</a>
+      </div>
+      <img class="shot" src="screenshot.png" alt="OS GitUI showing a commit graph, branches and staged files" width="1456" height="939" />
+    </section>
+
+    <section id="features">
+      <h2>Everything you need for daily Git</h2>
+      <div class="grid">
+        <div class="card"><h3>Commit graph</h3><p>Colored lanes for every branch and merge. Smooth scrolling through tens of thousands of commits.</p></div>
+        <div class="card"><h3>Stage by line</h3><p>Stage, unstage or discard whole files, single hunks, or just the lines you pick.</p></div>
+        <div class="card"><h3>Diff views</h3><p>Unified or side-by-side diffs for your changes and for any commit.</p></div>
+        <div class="card"><h3>Branches and tags</h3><p>Create, switch, rename, delete, merge and rebase from the sidebar or the graph.</p></div>
+        <div class="card"><h3>Remotes</h3><p>Fetch, pull (fast-forward, merge or rebase) and push, with ahead and behind counts.</p></div>
+        <div class="card"><h3>Commit tools</h3><p>Cherry-pick, revert, reset (soft, mixed, hard), amend and detached checkout.</p></div>
+        <div class="card"><h3>Stashes</h3><p>Stash with untracked files, then apply, pop or drop.</p></div>
+        <div class="card"><h3>Safe recovery</h3><p>Clear banners to abort or continue a merge, rebase, cherry-pick or revert.</p></div>
+        <div class="card"><h3>Uses your Git</h3><p>Runs the real <code>git</code>, so your hooks, SSH keys, credential helpers and signing just work.</p></div>
+      </div>
+    </section>
+
+    <section id="download">
+      <h2>Download</h2>
+      <div class="dl">
+        <a href="https://github.com/Thinkelution/the-os-gitui/releases/latest"><b>macOS</b><span>Apple Silicon and Intel (.dmg)</span></a>
+        <a href="https://github.com/Thinkelution/the-os-gitui/releases/latest"><b>Windows</b><span>10 and 11 (.msi / .exe)</span></a>
+        <a href="https://github.com/Thinkelution/the-os-gitui/releases/latest"><b>Linux</b><span>.deb, .rpm and AppImage</span></a>
+      </div>
+      <p style="text-align:center;color:var(--dim)">Needs Git 2.31 or newer installed on your computer.</p>
+    </section>
+
+    <section>
+      <h2>Coming next</h2>
+      <ul class="road">
+        <li><b>Interactive rebase</b>: reorder, squash and edit commits by drag and drop.</li>
+        <li><b>Merge conflict editor</b>: pick ours, theirs or both, line by line.</li>
+        <li><b>Pull requests</b>: GitHub and GitLab reviews inside the app.</li>
+        <li><b>AI coding agent</b>: write commit messages, explain diffs, and run coding agents on branches.</li>
+      </ul>
+    </section>
+
+    <footer>MIT licensed · Made by Thinkelution · <a href="https://github.com/Thinkelution/the-os-gitui">github.com/Thinkelution/the-os-gitui</a></footer>
+  </div>
+</body>
+</html>

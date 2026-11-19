@@ -1,12 +1,32 @@
 mod accounts;
 mod commands;
+mod connect;
 mod extra;
 mod git;
 mod graph;
+mod mcp;
 mod pty;
+
+use tauri::{Emitter, Manager};
+
+pub fn serve_mcp() {
+    mcp::serve();
+}
 
 pub fn run() {
     tauri::Builder::default()
+        // A second launch (`the-os-gitui <folder>`, or an agent's open_in_gitui)
+        // hands its folder to the running window instead of opening another.
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            if let Some(arg) = argv.get(1).filter(|a| !a.starts_with('-')) {
+                let p = std::path::Path::new(&cwd).join(arg);
+                let _ = app.emit("open-path", p.to_string_lossy().into_owned());
+            }
+            if let Some(w) = app.get_webview_window("main") {
+                let _ = w.unminimize();
+                let _ = w.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             commands::startup_path,
@@ -43,6 +63,7 @@ pub fn run() {
             pty::pty_write,
             pty::pty_resize,
             pty::pty_kill,
+            connect::agent_connection,
         ])
         .run(tauri::generate_context!())
         .expect("error while running OS GitUI");

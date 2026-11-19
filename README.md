@@ -21,6 +21,16 @@ Website: https://thinkelution.github.io/the-os-gitui/
 - Abort / continue banner for merge, rebase, cherry-pick and revert
 - Open from a terminal: `the-os-gitui path/to/repo`
 
+### v0.2
+
+- New look: SVG icons, light and dark themes, resizable side panels, branch folders
+- Command palette (`Ctrl/⌘ K`): every action, branch checkout, tab switch
+- Interactive rebase: reorder by drag, pick / reword / squash / fixup / drop
+- File history (follows renames) and blame
+- Merge conflicts: take mine or theirs per file
+- Open a terminal or the file manager at the repo
+- Shortcuts: `Ctrl/⌘ T` new tab, `Ctrl/⌘ W` close tab, `F5` refresh, `Esc` close view
+
 ## Stack
 
 | Part | Choice |

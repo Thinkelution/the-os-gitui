@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../store";
 import { api } from "../lib/git";
 import { buildPatch, parseDiff, splitRows, type DiffLine, type Selection } from "../lib/diff";
+import { Icon } from "./Icon";
 
 const LIMIT = 4000;
 type Mode = "unified" | "split";
@@ -13,6 +14,7 @@ export function DiffView() {
   const closeDiff = useStore((s) => s.closeDiff);
   const run = useStore((s) => s.run);
   const confirm = useStore((s) => s.confirm);
+  const setView = useStore((s) => s.setView);
   const [mode, setMode] = useState<Mode>(() => (localStorage.getItem("diffMode") as Mode | null) ?? "unified");
   const [sel, setSel] = useState<Set<string>>(new Set());
   const [showAll, setShowAll] = useState(false);
@@ -133,7 +135,9 @@ export function DiffView() {
           <button className={mode === "unified" ? "on" : ""} onClick={() => setModeSaved("unified")}>Unified</button>
           <button className={mode === "split" ? "on" : ""} onClick={() => setModeSaved("split")}>Split</button>
         </div>
-        <button className="icon-btn" title="Close (Esc)" onClick={closeDiff}>✕</button>
+        <button className="icon-btn" title="File history" onClick={() => setView({ kind: "history", path })}><Icon name="history" /></button>
+        <button className="icon-btn" title="Blame" onClick={() => setView({ kind: "blame", path })}><Icon name="blame" /></button>
+        <button className="icon-btn" title="Close (Esc)" onClick={closeDiff}><Icon name="close" /></button>
       </div>
 
       <div className="diff-body selectable">

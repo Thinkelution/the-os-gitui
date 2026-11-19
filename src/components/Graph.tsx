@@ -2,8 +2,9 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useStore, type MenuItem } from "../store";
 import type { Commit, ResetMode } from "../lib/git";
 import { badges, copy, fullTime, hue, initials, relTime } from "../lib/format";
+import { Icon } from "./Icon";
 
-const ROW = 28;
+const ROW = 30;
 const LANE = 16;
 const PAD = 10;
 const MAX_LANES = 24;
@@ -25,6 +26,8 @@ export function Graph() {
   const prompt = useStore((s) => s.prompt);
   const confirm = useStore((s) => s.confirm);
   const showMenu = useStore((s) => s.showMenu);
+  const setView = useStore((s) => s.setView);
+  const theme = useStore((s) => s.theme);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -100,6 +103,8 @@ export function Graph() {
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, gw, height);
+    const bg = theme === "dark" ? "#16181d" : "#ffffff";
+    const fg = theme === "dark" ? "#ffffff" : "#1f2328";
     ctx.lineWidth = 2;
     ctx.lineCap = "round";
 
@@ -140,7 +145,7 @@ export function Graph() {
       ctx.lineTo(laneX(lane), yEnd);
       ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = "#1b1d23";
+      ctx.fillStyle = bg;
       ctx.beginPath();
       ctx.arc(laneX(lane), yM, 5.5, 0, Math.PI * 2);
       ctx.fill();
@@ -154,19 +159,24 @@ export function Graph() {
       if (!c) continue;
       const x = laneX(c.lane);
       const y = r * ROW - scrollTop + ROW / 2;
+      const merge = c.parents.length > 1;
+      ctx.fillStyle = bg;
+      ctx.beginPath();
+      ctx.arc(x, y, merge ? 5.5 : 7, 0, Math.PI * 2);
+      ctx.fill();
       ctx.fillStyle = laneColor(c.color);
       ctx.beginPath();
-      ctx.arc(x, y, c.parents.length > 1 ? 4 : 5.5, 0, Math.PI * 2);
+      ctx.arc(x, y, merge ? 3.5 : 5.5, 0, Math.PI * 2);
       ctx.fill();
       if (c.hash === status?.headHash) {
-        ctx.strokeStyle = "#ffffff";
+        ctx.strokeStyle = fg;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(x, y, 8, 0, Math.PI * 2);
         ctx.stroke();
       }
     }
-  }, [commits, scrollTop, height, gw, total, off, hasWip, headIdx, status?.headHash]);
+  }, [commits, scrollTop, height, gw, total, off, hasWip, headIdx, status?.headHash, theme]);
 
   const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget;
@@ -236,6 +246,11 @@ export function Graph() {
       { sep: true },
       { label: `Cherry-pick ${short} onto ${cur}`, disabled: isHead, action: () => void op("Cherry-pick", { op: "cherryPick", hash: c.hash }) },
       { label: `Revert ${short}`, action: () => void op("Revert", { op: "revert", hash: c.hash }) },
+      {
+        label: `Interactive rebase ${cur} onto ${short}…`,
+        disabled: isHead || !status?.branch,
+        action: () => setView({ kind: "rebase", base: c.hash }),
+      },
       { sep: true },
       { label: `Reset ${cur} here: soft (keep staged)`, disabled: isHead, action: reset(c, "soft") },
       { label: `Reset ${cur} here: mixed (keep files)`, disabled: isHead, action: reset(c, "mixed") },
@@ -322,6 +337,7 @@ export function Graph() {
         <span style={{ width: gw, flex: "none" }} className="dim">GRAPH</span>
         <span className="g-msg dim">COMMIT MESSAGE</span>
         <div className="g-search">
+          <Icon name="search" size={13} />
           <input
             placeholder="Search commits (message, author, SHA)"
             value={query}

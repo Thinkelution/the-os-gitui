@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useStore } from "../store";
 import { api, type CommitDetails, type FileChange, type RepoState } from "../lib/git";
 import { copy, fullTime, hue, initials, splitPath } from "../lib/format";
+import { fileMenu } from "../fileMenu";
+import { Icon } from "./Icon";
+import { MOD } from "./Toolbar";
 
 export function RightPanel() {
   const selection = useStore((s) => s.selection);
@@ -19,11 +22,20 @@ const STATE_LABEL: Record<Exclude<RepoState, "">, string> = {
   reverting: "Revert in progress",
 };
 
-function FileRow(props: { status: string; path: string; oldPath?: string | null; selected: boolean; onClick: () => void; actions?: React.ReactNode }) {
+function FileRow(props: { status: string; path: string; oldPath?: string | null; selected: boolean; onClick: () => void; actions?: React.ReactNode; conflicted?: boolean }) {
+  const showMenu = useStore((s) => s.showMenu);
   const { dir, name } = splitPath(props.path);
   const s = props.status === "?" ? "A" : props.status;
   return (
-    <div className={"file" + (props.selected ? " sel" : "")} onClick={props.onClick} title={props.oldPath ? `${props.oldPath} → ${props.path}` : props.path}>
+    <div
+      className={"file" + (props.selected ? " sel" : "")}
+      onClick={props.onClick}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        showMenu(e, fileMenu(props.path, { conflicted: props.conflicted }));
+      }}
+      title={props.oldPath ? `${props.oldPath} → ${props.path}` : props.path}
+    >
       <span className={"fstat s-" + s}>{s}</span>
       <span className="fname">{name}</span>
       <span className="fdir">{dir}</span>
@@ -137,14 +149,21 @@ function StagingPanel() {
               status={f.conflicted ? "C" : f.untracked ? "?" : f.worktree}
               path={f.path}
               selected={isOpen(f, false)}
+              conflicted={f.conflicted}
               onClick={() => openWork(f, false)}
               actions={
-                <>
-                  {!f.conflicted && <button className="icon-btn" title="Discard changes" onClick={() => discard([f])}>⟲</button>}
-                  <button className="icon-btn ok" title={f.conflicted ? "Mark resolved (stage)" : "Stage file"} onClick={() => stage([f.path])}>
-                    {f.conflicted ? "✓" : "+"}
-                  </button>
-                </>
+                f.conflicted ? (
+                  <>
+                    <button className="chip-btn" title="Keep my version" onClick={() => void run("Use ours", (r) => api.resolveConflict(r, f.path, "ours"), true)}>Mine</button>
+                    <button className="chip-btn" title="Take their version" onClick={() => void run("Use theirs", (r) => api.resolveConflict(r, f.path, "theirs"), true)}>Theirs</button>
+                    <button className="icon-btn ok" title="Mark resolved (stage as is)" onClick={() => stage([f.path])}><Icon name="check" size={14} /></button>
+                  </>
+                ) : (
+                  <>
+                    <button className="icon-btn" title="Discard changes" onClick={() => discard([f])}><Icon name="undo" size={14} /></button>
+                    <button className="icon-btn ok" title="Stage file" onClick={() => stage([f.path])}><Icon name="plus" size={14} /></button>
+                  </>
+                )
               }
             />
           ))}
@@ -167,7 +186,7 @@ function StagingPanel() {
               oldPath={f.oldPath}
               selected={isOpen(f, true)}
               onClick={() => openWork(f, true)}
-              actions={<button className="icon-btn" title="Unstage file" onClick={() => unstage([f.path])}>−</button>}
+              actions={<button className="icon-btn" title="Unstage file" onClick={() => unstage([f.path])}><Icon name="minus" size={14} /></button>}
             />
           ))}
           {!staged.length && <div className="empty small">Stage files to commit them</div>}
@@ -189,7 +208,7 @@ function StagingPanel() {
         <label className="check">
           <input type="checkbox" checked={amend} onChange={(e) => void toggleAmend(e.target.checked)} /> Amend previous commit
         </label>
-        <button className="primary big" disabled={!canCommit} onClick={() => void commit()} title="Ctrl/Cmd + Enter">
+        <button className="primary big" disabled={!canCommit} onClick={() => void commit()} title={`${MOD} + Enter`}>
           {amend ? "Amend previous commit" : staged.length ? `Commit changes to ${staged.length} file${staged.length === 1 ? "" : "s"}` : "Stage changes to commit"}
         </button>
       </div>

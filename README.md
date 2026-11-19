@@ -1,8 +1,9 @@
 # OS GitUI
 
-A free, open-source Git GUI for macOS, Linux and Windows.
+A free, open-source Git GUI for macOS, Linux and Windows, with AI coding agents built in.
+Start Claude Code, Codex, Gemini and more in one click, each on its own branch.
 
-![OS GitUI](site/screenshot.png)
+![OS GitUI with Claude Code running on its own branch](site/shot-agent.png)
 
 Website: https://thinkelution.github.io/the-os-gitui/
 

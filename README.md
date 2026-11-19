@@ -31,6 +31,19 @@ Website: https://thinkelution.github.io/the-os-gitui/
 - Open a terminal or the file manager at the repo
 - Shortcuts: `Ctrl/⌘ T` new tab, `Ctrl/⌘ W` close tab, `F5` refresh, `Esc` close view
 
+### v0.3
+
+- **AI agents, one click**: start Claude Code, Codex, Gemini, Copilot CLI, OpenCode,
+  Aider, Cursor Agent or your own command in a built-in terminal. Missing agents
+  get an Install button. Optional task text is pasted in when the agent starts.
+- **Agents on their own branch**: by default each agent gets a new branch in its
+  own folder (git worktree), so your work is never touched. Worktrees show in
+  the sidebar with a live dot while an agent runs.
+- **Git profiles**: many accounts on one computer. A profile sets commit name and
+  email, the SSH key, and the HTTPS user name, per repo only. Profiles can be
+  picked automatically from the remote (e.g. `github.com/acme`), and when cloning.
+- Built-in terminal panel (`+` for a shell), resizable
+
 ## Stack
 
 | Part | Choice |

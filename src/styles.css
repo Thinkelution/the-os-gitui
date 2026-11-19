@@ -435,3 +435,53 @@ button.big { padding: 9px; font-size: 13px; border-radius: 7px; }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--faint); }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-corner { background: transparent; }
+
+/* ------------------------------------------------------------ terminal dock */
+.center-main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.dock { flex: none; display: flex; flex-direction: column; border-top: 1px solid var(--border); background: var(--bg2); position: relative; min-height: 34px; }
+.dock-grip { position: absolute; top: -4px; left: 0; right: 0; height: 8px; cursor: row-resize; z-index: 6; }
+.dock-grip:hover { background: linear-gradient(transparent 3px, var(--accent) 3px, var(--accent) 5px, transparent 5px); }
+body.resizing-v { cursor: row-resize; }
+body.resizing-v * { pointer-events: none; }
+.dock-tabs { display: flex; align-items: center; gap: 2px; height: 34px; padding: 0 6px; flex: none; overflow-x: auto; scrollbar-width: none; }
+.dock-tab { display: flex; align-items: center; gap: 6px; height: 26px; padding: 0 4px 0 10px; border-radius: 6px; cursor: pointer; color: var(--dim); white-space: nowrap; max-width: 260px; }
+.dock-tab:hover { background: var(--hover); color: var(--text); }
+.dock-tab.active { background: var(--bg3); color: var(--text); }
+.dock-tab.active .icon { color: var(--accent); }
+.dock-tab.exited { opacity: 0.6; }
+.dock-tab .tab-x { opacity: 1; }
+.dock-body { flex: 1; min-height: 0; background: var(--term-bg); padding: 6px 0 0 10px; }
+.term { width: 100%; height: 100%; }
+.term .xterm-viewport { background: transparent !important; }
+:root, [data-theme="dark"] { --term-bg: #111317; }
+[data-theme="light"] { --term-bg: #fbfbfc; }
+
+/* ------------------------------------------------------------ profiles + agents */
+.profile-chip { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 170px; padding: 2px 10px; border-radius: 14px; background: transparent; color: var(--dim); position: relative; }
+.profile-chip.warn { border-color: var(--yellow); color: var(--yellow); }
+.warn-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--yellow); flex: none; }
+.modal.wide { width: 640px; }
+.modal-title.row { display: flex; align-items: center; gap: 8px; }
+select.field { appearance: auto; }
+.agent-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 4px 0 6px; }
+.agent-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg2); cursor: pointer; min-height: 62px; }
+.agent-card:hover { border-color: var(--faint); }
+.agent-card.on { border-color: var(--accent); box-shadow: 0 0 0 3px var(--sel); }
+.agent-card.missing { cursor: default; }
+.agent-card.missing b { color: var(--dim); }
+.agent-card.add { align-items: center; justify-content: center; flex-direction: row; color: var(--dim); border-style: dashed; }
+.card-x { position: absolute; top: 4px; right: 4px; width: 18px; height: 18px; }
+.choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.choice label { display: flex; gap: 8px; align-items: flex-start; padding: 10px; border: 1px solid var(--border); border-radius: 10px; cursor: pointer; }
+.choice label.on { border-color: var(--accent); background: var(--sel); }
+.choice label div { display: flex; flex-direction: column; }
+.choice input { margin-top: 3px; }
+.prof-list { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; }
+.prof { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; }
+.prof.on { border-color: var(--green); }
+.prof .pill { margin-left: 6px; }
+.prof-form { display: flex; flex-direction: column; gap: 6px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.two > div { display: flex; flex-direction: column; gap: 6px; }
+.side-hint { padding: 4px 14px 6px 30px; cursor: pointer; }
+.dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); }

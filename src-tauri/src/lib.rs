@@ -1,7 +1,9 @@
+mod accounts;
 mod commands;
 mod extra;
 mod git;
 mod graph;
+mod pty;
 
 pub fn run() {
     tauri::Builder::default()
@@ -31,6 +33,16 @@ pub fn run() {
             extra::rebase_interactive,
             extra::reveal,
             extra::open_terminal,
+            accounts::get_identity,
+            accounts::apply_profile,
+            accounts::worktree_list,
+            accounts::worktree_add,
+            accounts::worktree_remove,
+            pty::agents_detect,
+            pty::pty_launch,
+            pty::pty_write,
+            pty::pty_resize,
+            pty::pty_kill,
         ])
         .run(tauri::generate_context!())
         .expect("error while running OS GitUI");

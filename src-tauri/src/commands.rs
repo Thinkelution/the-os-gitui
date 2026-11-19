@@ -95,8 +95,17 @@ pub async fn repo_init(path: String) -> Result<RepoInfo, String> {
 
 /// Clone a repo, streaming git's progress lines as `clone-progress` events.
 #[tauri::command]
-pub async fn repo_clone(app: AppHandle, url: String, dest: String) -> Result<RepoInfo, String> {
+pub async fn repo_clone(
+    app: AppHandle,
+    url: String,
+    dest: String,
+    profile: Option<crate::accounts::Profile>,
+) -> Result<RepoInfo, String> {
     blocking(move || {
+        let extra = match &profile {
+            Some(p) => crate::accounts::clone_args(p)?,
+            None => vec![],
+        };
         let url = url.trim().to_string();
         safe(&url)?;
         let destp = PathBuf::from(&dest);
@@ -115,6 +124,7 @@ pub async fn repo_clone(app: AppHandle, url: String, dest: String) -> Result<Rep
         }
 
         let mut c = git::command(&parent);
+        c.args(&extra);
         c.args(["clone", "--progress", "--", &url, &dest])
             .stdout(Stdio::null())
             .stderr(Stdio::piped());
@@ -151,6 +161,9 @@ pub async fn repo_clone(app: AppHandle, url: String, dest: String) -> Result<Rep
                 .filter(|l| !l.starts_with("Receiving") && !l.starts_with("Resolving"))
                 .collect();
             return Err(msg.join("\n"));
+        }
+        if let Some(p) = &profile {
+            crate::accounts::apply(Path::new(&dest), p)?;
         }
         open_repo(&dest)
     })

@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { api, type Commit, type Op, type Refs, type RepoInfo, type Status } from "./lib/git";
+import { api, type Commit, type Identity, type Launch, type Op, type Refs, type RepoInfo, type Status, type Worktree } from "./lib/git";
+import { loadProfiles, saveProfiles, toConfig, type Profile } from "./lib/profiles";
 
 export type Selection = { kind: "wip" } | { kind: "commit"; hash: string };
 
@@ -25,7 +26,11 @@ export interface ConfirmOpts { title: string; message: string; ok?: string; dang
 export type Dialog =
   | ({ kind: "prompt"; resolve: (v: PromptResult | null) => void } & PromptOpts)
   | ({ kind: "confirm"; resolve: (v: boolean) => void } & ConfirmOpts)
-  | { kind: "clone" };
+  | { kind: "clone" }
+  | { kind: "agent"; cwd?: string }
+  | { kind: "profiles" };
+
+export interface Term { id: number; title: string; cwd: string; agent: string | null; exited: boolean; code: number | null }
 
 const PAGE = 5000;
 
@@ -59,7 +64,20 @@ interface State {
   view: CenterView | null;
   theme: Theme;
   palette: boolean;
+  identity: Identity | null;
+  worktrees: Worktree[];
+  profiles: Profile[];
+  terms: Term[];
+  activeTerm: number | null;
+  dock: boolean;
 
+  setProfiles(p: Profile[]): void;
+  useProfile(p: Profile, repo?: string): Promise<boolean>;
+  launch(cwd: string, launch: Launch, title: string): Promise<number | null>;
+  setActiveTerm(id: number | null): void;
+  closeTerm(id: number): void;
+  termExited(id: number, code: number | null): void;
+  setDock(open: boolean): void;
   setView(v: CenterView | null): void;
   setTheme(t: Theme): void;
   setPalette(open: boolean): void;
@@ -107,6 +125,56 @@ export const useStore = create<State>((set, get) => ({
   view: null,
   theme: load<Theme>("theme", "dark"),
   palette: false,
+  identity: null,
+  worktrees: [],
+  profiles: loadProfiles(),
+  terms: [],
+  activeTerm: null,
+  dock: false,
+
+  setProfiles(p) {
+    set({ profiles: p });
+    saveProfiles(p);
+  },
+  async useProfile(p, repo) {
+    const target = repo ?? get().active;
+    if (!target) return false;
+    try {
+      await api.applyProfile(target, toConfig(p));
+      if (target === get().active) set({ identity: await api.identity(target) });
+      get().toast("info", `Using profile "${p.label}" (${p.email}) in this repo`);
+      return true;
+    } catch (e) {
+      get().toast("error", String(e));
+      return false;
+    }
+  },
+  async launch(cwd, launch, title) {
+    try {
+      const id = await api.ptyLaunch(cwd, launch, 120, 30);
+      const agent = launch.kind === "agent" ? launch.id : null;
+      set({ terms: [...get().terms, { id, title, cwd, agent, exited: false, code: null }], activeTerm: id, dock: true });
+      return id;
+    } catch (e) {
+      get().toast("error", String(e));
+      return null;
+    }
+  },
+  setActiveTerm(id) {
+    set({ activeTerm: id });
+  },
+  closeTerm(id) {
+    void api.ptyKill(id).catch(() => undefined);
+    const terms = get().terms.filter((t) => t.id !== id);
+    const activeTerm = get().activeTerm === id ? terms[terms.length - 1]?.id ?? null : get().activeTerm;
+    set({ terms, activeTerm, dock: terms.length ? get().dock : false });
+  },
+  termExited(id, code) {
+    set({ terms: get().terms.map((t) => (t.id === id ? { ...t, exited: true, code } : t)) });
+  },
+  setDock(open) {
+    set({ dock: open });
+  },
 
   setView(v) {
     set({ view: v, diff: null, diffText: "" });
@@ -137,7 +205,7 @@ export const useStore = create<State>((set, get) => ({
   },
 
   activate(path) {
-    set({ active: path, commits: [], status: null, refs: null, limit: PAGE, selection: { kind: "wip" }, diff: null, diffText: "", view: null });
+    set({ active: path, commits: [], status: null, refs: null, identity: null, worktrees: [], limit: PAGE, selection: { kind: "wip" }, diff: null, diffText: "", view: null });
     save("active", path);
     if (path) void get().loadAll();
   },
@@ -153,9 +221,15 @@ export const useStore = create<State>((set, get) => ({
     const repo = get().active;
     if (!repo) return;
     try {
-      const [commits, status, refs] = await Promise.all([api.log(repo, get().limit), api.status(repo), api.refs(repo)]);
+      const [commits, status, refs, identity, worktrees] = await Promise.all([
+        api.log(repo, get().limit),
+        api.status(repo),
+        api.refs(repo),
+        api.identity(repo).catch(() => null),
+        api.worktrees(repo).catch(() => [] as Worktree[]),
+      ]);
       if (get().active !== repo) return;
-      set({ commits, status, refs });
+      set({ commits, status, refs, identity, worktrees });
     } catch (e) {
       if (get().active === repo) get().toast("error", String(e));
     }

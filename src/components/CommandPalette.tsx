@@ -66,7 +66,15 @@ export function CommandPalette() {
       add({ id: "stageall", group: "Changes", icon: "plus", label: "Stage all changes", run: () => void s.run("Stage", (r) => api.stage(r, []), true) });
       add({ id: "unstageall", group: "Changes", icon: "minus", label: "Unstage all changes", run: () => void s.run("Unstage", (r) => api.unstage(r, []), true) });
       add({ id: "wip", group: "Changes", icon: "commit", label: "Go to working changes", run: () => { s.select({ kind: "wip" }); s.setView(null); } });
-      add({ id: "term", group: "Repository", icon: "terminal", label: "Open terminal here", run: () => api.openTerminal(repo).catch((e) => s.toast("error", String(e))) });
+      add({ id: "agent", group: "AI", icon: "sparkle", label: "Start AI agent…", run: () => s.setDialog({ kind: "agent" }) });
+      add({ id: "ag:claude", group: "AI", icon: "sparkle", label: "Start Claude Code here", run: () => void s.launch(repo, { kind: "agent", id: "claude", prompt: null }, `Claude Code · ${s.status?.branch ?? "HEAD"}`) });
+      add({ id: "ag:codex", group: "AI", icon: "sparkle", label: "Start Codex here", run: () => void s.launch(repo, { kind: "agent", id: "codex", prompt: null }, `Codex CLI · ${s.status?.branch ?? "HEAD"}`) });
+      add({ id: "term", group: "Repository", icon: "terminal", label: "New terminal (in app)", run: () => void s.launch(repo, { kind: "shell" }, "Terminal") });
+      add({ id: "termx", group: "Repository", icon: "terminal", label: "Open external terminal", run: () => api.openTerminal(repo).catch((e) => s.toast("error", String(e))) });
+      add({ id: "profiles", group: "Profile", icon: "user", label: "Manage git profiles…", run: () => s.setDialog({ kind: "profiles" }) });
+      for (const p of s.profiles) {
+        add({ id: "prof:" + p.id, group: "Profile", icon: "user", label: `Use profile ${p.label}`, hint: p.email, run: () => void s.useProfile(p) });
+      }
       add({ id: "reveal", group: "Repository", icon: "folder", label: "Show repository in folder", run: () => api.reveal(repo).catch((e) => s.toast("error", String(e))) });
       add({ id: "refresh", group: "Repository", icon: "refresh", label: "Refresh", hint: "F5", run: () => void s.loadAll() });
       for (const b of s.refs?.local ?? []) {

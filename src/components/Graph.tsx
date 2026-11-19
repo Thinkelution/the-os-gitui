@@ -52,7 +52,7 @@ export function Graph() {
     }
     return Math.min(m, MAX_LANES);
   }, [commits]);
-  const gw = PAD * 2 + lanes * LANE;
+  const gw = Math.max(PAD * 2 + lanes * LANE, 64);
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();

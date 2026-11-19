@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useStore, type MenuItem } from "../store";
-import type { Branch, RemoteBranch, Stash, Tag } from "../lib/git";
+import { api, type Branch, type RemoteBranch, type Stash, type Tag, type Worktree } from "../lib/git";
 import { copy } from "../lib/format";
 import { Icon, type IconName } from "./Icon";
 
@@ -71,6 +71,13 @@ export function Sidebar() {
   const prompt = useStore((s) => s.prompt);
   const confirm = useStore((s) => s.confirm);
   const showMenu = useStore((s) => s.showMenu);
+  const worktrees = useStore((s) => s.worktrees);
+  const terms = useStore((s) => s.terms);
+  const openPath = useStore((s) => s.openPath);
+  const setDialog = useStore((s) => s.setDialog);
+  const launch = useStore((s) => s.launch);
+  const run = useStore((s) => s.run);
+  const toast = useStore((s) => s.toast);
   const [filter, setFilter] = useState("");
   const [open, setOpen] = useState<Record<string, boolean>>({ local: true, remote: true, tags: false, stashes: true });
   const [closed, setClosed] = useState<Set<string>>(new Set());
@@ -197,6 +204,28 @@ export function Sidebar() {
     },
   ];
 
+  const wtMenu = (w: Worktree): MenuItem[] => [
+    { label: "Open in new tab", action: () => void openPath(w.path) },
+    { label: "Start AI agent here…", action: () => setDialog({ kind: "agent", cwd: w.path }) },
+    { label: "Terminal here", action: () => void launch(w.path, { kind: "shell" }, `Terminal · ${w.branch ?? "detached"}`) },
+    { label: "Show in folder", action: () => api.reveal(w.path).catch((e) => toast("error", String(e))) },
+    { label: "Copy path", action: () => void copy(w.path) },
+    { sep: true },
+    {
+      label: "Remove worktree…",
+      danger: true,
+      disabled: w.main,
+      action: async () => {
+        if (!(await confirm({ title: "Remove worktree", message: `Delete the folder ${w.path}? The branch "${w.branch ?? ""}" and its commits are kept.`, ok: "Remove", danger: true }))) return;
+        const ok = await run("Remove worktree", (r) => api.worktreeRemove(r, w.path, false), true);
+        if (!ok && (await confirm({ title: "Worktree has changes", message: "It has uncommitted changes. Remove it anyway? Those changes are lost.", ok: "Remove anyway", danger: true }))) {
+          void run("Remove worktree", (r) => api.worktreeRemove(r, w.path, true), true);
+        }
+      },
+    },
+  ];
+  const trees = worktrees.filter((w) => !w.main && match(w.branch ?? w.path));
+
   const locals = refs.local.filter((b) => match(b.name));
   const remotes = refs.remote.filter((b) => match(b.name));
   const tags = refs.tags.filter((t) => match(t.name));
@@ -286,6 +315,36 @@ export function Sidebar() {
               <span className="side-name">{s.message}</span>
             </div>
           ))}
+        </Section>
+
+        <Section title="Worktrees" icon="worktree" count={trees.length} open={open.worktrees ?? true} onToggle={() => toggle("worktrees")}>
+          {trees.map((w) => {
+            const running = terms.some((t) => !t.exited && t.cwd.replace(/\\/g, "/") === w.path.replace(/\\/g, "/"));
+            return (
+              <div
+                key={w.path}
+                className="side-item"
+                style={pad(0)}
+                title={w.path}
+                onClick={() => {
+                  const b = refs.local.find((x) => x.name === w.branch);
+                  if (b) goto(b.hash);
+                }}
+                onDoubleClick={() => void openPath(w.path)}
+                onContextMenu={ctx(wtMenu(w))}
+              >
+                <span className={"dot" + (running ? " live" : "")} />
+                <span className="side-name">{w.branch ?? w.head.slice(0, 7)}</span>
+                {running && <Icon name="sparkle" size={12} className="ok" />}
+                {w.prunable && <span className="ab gone">missing</span>}
+              </div>
+            );
+          })}
+          {!trees.length && (
+            <div className="side-hint dim small" onClick={() => setDialog({ kind: "agent" })}>
+              Start an AI agent on a new branch to get one.
+            </div>
+          )}
         </Section>
       </div>
     </div>

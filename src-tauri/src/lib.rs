@@ -1,4 +1,5 @@
 mod commands;
+mod extra;
 mod git;
 mod graph;
 
@@ -23,6 +24,13 @@ pub fn run() {
             commands::commit,
             commands::last_message,
             commands::git_op,
+            extra::file_history,
+            extra::blame,
+            extra::resolve_conflict,
+            extra::rebase_list,
+            extra::rebase_interactive,
+            extra::reveal,
+            extra::open_terminal,
         ])
         .run(tauri::generate_context!())
         .expect("error while running OS GitUI");

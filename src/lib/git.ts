@@ -111,4 +111,18 @@ export const api = {
   commit: (repo: string, message: string, amend: boolean) => invoke<string>("commit", { repo, message, amend }),
   lastMessage: (repo: string) => invoke<string>("last_message", { repo }),
   op: (repo: string, op: Op) => invoke<string>("git_op", { repo, op }),
+  fileHistory: (repo: string, path: string, limit = 2000) => invoke<HistoryEntry[]>("file_history", { repo, path, limit }),
+  blame: (repo: string, path: string) => invoke<Blame>("blame", { repo, path }),
+  resolveConflict: (repo: string, path: string, side: "ours" | "theirs") => invoke<void>("resolve_conflict", { repo, path, side }),
+  rebaseList: (repo: string, base: string) => invoke<TodoCommit[]>("rebase_list", { repo, base }),
+  rebaseInteractive: (repo: string, base: string, items: TodoItem[]) => invoke<string>("rebase_interactive", { repo, base, items }),
+  reveal: (path: string) => invoke<void>("reveal", { path }),
+  openTerminal: (path: string) => invoke<void>("open_terminal", { path }),
 };
+
+export interface HistoryEntry { hash: string; parents: string[]; author: string; email: string; time: number; subject: string; path: string }
+export interface BlameLine { hash: string; line: number; text: string }
+export interface Blame { lines: BlameLine[]; commits: Record<string, { author: string; time: number; summary: string }> }
+export interface TodoCommit { hash: string; subject: string; body: string; author: string; merge: boolean }
+export type TodoAction = "pick" | "reword" | "squash" | "fixup" | "drop";
+export interface TodoItem { hash: string; action: TodoAction; message: string | null }

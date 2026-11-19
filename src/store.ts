@@ -7,7 +7,15 @@ export type DiffSource =
   | { kind: "work"; path: string; staged: boolean; untracked: boolean; conflicted: boolean }
   | { kind: "commit"; hash: string; parent: string | null; path: string; oldPath: string | null };
 
-export interface MenuItem { label?: string; action?: () => void; danger?: boolean; disabled?: boolean; sep?: boolean }
+/** What the center area shows instead of the graph. A diff always wins. */
+export type CenterView =
+  | { kind: "history"; path: string }
+  | { kind: "blame"; path: string }
+  | { kind: "rebase"; base: string };
+
+export type Theme = "dark" | "light";
+
+export interface MenuItem { label?: string; action?: () => void; danger?: boolean; disabled?: boolean; sep?: boolean; hint?: string }
 export interface Toast { id: number; kind: "error" | "info"; text: string }
 
 export interface PromptResult { value: string; checked: boolean }
@@ -48,7 +56,13 @@ interface State {
   menu: { x: number; y: number; items: MenuItem[] } | null;
   dialog: Dialog | null;
   jump: string | null;
+  view: CenterView | null;
+  theme: Theme;
+  palette: boolean;
 
+  setView(v: CenterView | null): void;
+  setTheme(t: Theme): void;
+  setPalette(open: boolean): void;
   openPath(path: string): Promise<boolean>;
   activate(path: string | null): void;
   closeTab(path: string): void;
@@ -90,6 +104,20 @@ export const useStore = create<State>((set, get) => ({
   menu: null,
   dialog: null,
   jump: null,
+  view: null,
+  theme: load<Theme>("theme", "dark"),
+  palette: false,
+
+  setView(v) {
+    set({ view: v, diff: null, diffText: "" });
+  },
+  setTheme(t) {
+    set({ theme: t });
+    save("theme", t);
+  },
+  setPalette(open) {
+    set({ palette: open });
+  },
 
   async openPath(path) {
     try {
@@ -109,7 +137,7 @@ export const useStore = create<State>((set, get) => ({
   },
 
   activate(path) {
-    set({ active: path, commits: [], status: null, refs: null, limit: PAGE, selection: { kind: "wip" }, diff: null, diffText: "" });
+    set({ active: path, commits: [], status: null, refs: null, limit: PAGE, selection: { kind: "wip" }, diff: null, diffText: "", view: null });
     save("active", path);
     if (path) void get().loadAll();
   },

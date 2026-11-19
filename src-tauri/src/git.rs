@@ -42,8 +42,21 @@ pub fn command(dir: &Path) -> Command {
 }
 
 pub fn run_raw(dir: &Path, args: &[&str], input: Option<&[u8]>) -> Result<Output, String> {
+    run_env(dir, args, input, &[])
+}
+
+/// Run git with extra environment variables.
+pub fn run_env(
+    dir: &Path,
+    args: &[&str],
+    input: Option<&[u8]>,
+    env: &[(&str, &str)],
+) -> Result<Output, String> {
     let mut c = command(dir);
     c.args(args);
+    for (k, v) in env {
+        c.env(k, v);
+    }
     if input.is_some() {
         c.stdin(Stdio::piped());
     }

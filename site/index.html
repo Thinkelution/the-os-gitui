@@ -62,6 +62,11 @@
     .road li { margin:8px 0; color:var(--dim); }
     .road li b { color:var(--text); }
     code { background:var(--bg3); padding:2px 6px; border-radius:5px; font-size:14px; }
+    .cmds { display:grid; grid-template-columns:1fr 1fr; gap:14px; max-width:980px; margin:0 auto; }
+    .cmd { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:8px; }
+    .cmd span { font-weight:700; }
+    .cmd code { display:block; padding:10px 12px; background:#0b0d10; font-size:13px; overflow-x:auto; white-space:nowrap; }
+    @media (max-width: 860px) { .cmds { grid-template-columns:1fr; } }
     footer { color:var(--dim); text-align:center; padding:80px 0 40px; font-size:14px; }
     @media (max-width: 860px) { h1 { font-size:40px; } .split, .split.rev { grid-template-columns:1fr; } nav .links { display:none; } }
   </style>
@@ -74,6 +79,7 @@
       <b>OS GitUI</b>
       <div class="links">
         <a href="#agents">AI agents</a>
+        <a href="#inside">Claude Code &amp; Codex</a>
         <a href="#profiles">Profiles</a>
         <a href="#features">Features</a>
         <a href="#download">Download</a>
@@ -120,6 +126,19 @@
         <div class="card"><span class="ic">🖥️</span><h3>Built-in terminal</h3><p>A real terminal inside the app on Windows, macOS and Linux. Open a shell in any repo or worktree.</p></div>
         <div class="card"><span class="ic">🔌</span><h3>Bring your own agent</h3><p>Add any command line tool as a custom agent, with your own flags and models.</p></div>
       </div>
+    </section>
+
+    <section id="inside">
+      <div class="center">
+        <div class="eyebrow">Works inside your agent too</div>
+        <h2>Add OS GitUI to Claude Code and Codex.</h2>
+        <p class="sub">One click on <b>Connect</b> in the app, or one command. Your agent gets an <code>osgitui</code> tool and a <code>/gitui</code> command. Ask it to "open this in OS GitUI" and review the changes here.</p>
+      </div>
+      <div class="cmds">
+        <div class="cmd"><span>Claude Code</span><code>claude mcp add --scope user osgitui -- the-os-gitui mcp</code></div>
+        <div class="cmd"><span>Codex</span><code>codex mcp add osgitui -- the-os-gitui mcp</code></div>
+      </div>
+      <p class="dim center" style="font-size:14px;margin-top:14px">Use the full app path if it is not on your PATH. See the <a href="https://github.com/Thinkelution/the-os-gitui#use-it-from-inside-claude-code-and-codex">README</a> for macOS, Windows and Linux paths.</p>
     </section>
 
     <section id="profiles">

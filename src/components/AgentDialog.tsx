@@ -3,6 +3,7 @@ import { useStore } from "../store";
 import { api, type AgentInfo } from "../lib/git";
 import { newId } from "../lib/profiles";
 import { Icon } from "./Icon";
+import { ConnectAgents } from "./ConnectAgents";
 
 interface Custom { id: string; name: string; command: string }
 
@@ -191,6 +192,8 @@ export function AgentDialog({ cwd }: { cwd?: string }) {
             {!identity.local && " (global git config)"}
           </div>
         )}
+
+        <ConnectAgents />
 
         <div className="modal-actions">
           <button onClick={close} disabled={busy}>Cancel</button>

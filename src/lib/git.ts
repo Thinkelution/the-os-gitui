@@ -105,6 +105,8 @@ export const api = {
   ptyWrite: (id: number, data: string) => invoke<void>("pty_write", { id, data }),
   ptyResize: (id: number, cols: number, rows: number) => invoke<void>("pty_resize", { id, cols, rows }),
   ptyKill: (id: number) => invoke<void>("pty_kill", { id }),
+  agentConnection: (agent: "claude" | "codex", action: "status" | "connect" | "disconnect") =>
+    invoke<ConnectStatus>("agent_connection", { agent, action }),
   log: (repo: string, limit: number) => invoke<Commit[]>("get_log", { repo, limit }),
   status: (repo: string) => invoke<Status>("get_status", { repo }),
   refs: (repo: string) => invoke<Refs>("get_refs", { repo }),
@@ -147,3 +149,4 @@ export type Launch =
   | { kind: "agent"; id: string; prompt: string | null }
   | { kind: "install"; id: string }
   | { kind: "custom"; command: string; prompt: string | null };
+export interface ConnectStatus { agent: string; installed: boolean; connected: boolean; command: boolean }

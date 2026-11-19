@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "./store";
+import { listen } from "@tauri-apps/api/event";
 import { api } from "./lib/git";
 import { TabBar } from "./components/TabBar";
 import { Toolbar } from "./components/Toolbar";
@@ -44,6 +45,8 @@ export default function App() {
 
   useEffect(() => {
     startPtyEvents();
+    // A second launch (terminal or agent) sends its folder here.
+    const unOpen = listen<string>("open-path", (e) => void useStore.getState().openPath(e.payload));
     const st = useStore.getState();
     const restore = () => {
       if (st.active) st.activate(st.active);
@@ -91,6 +94,7 @@ export default function App() {
     window.addEventListener("contextmenu", noNativeMenu);
     window.addEventListener("keydown", keys);
     return () => {
+      void unOpen.then((f) => f());
       clearInterval(poll);
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("contextmenu", noNativeMenu);

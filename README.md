@@ -45,6 +45,32 @@ Website: https://thinkelution.github.io/the-os-gitui/
   picked automatically from the remote (e.g. `github.com/acme`), and when cloning.
 - Built-in terminal panel (`+` for a shell), resizable
 
+### Use it from inside Claude Code and Codex
+
+OS GitUI has a built-in MCP server (`the-os-gitui mcp`). It gives your agent two tools:
+`open_in_gitui` (opens the repo in the app so you can review) and `repo_overview`.
+
+**One click:** in the app, open **AI Agent** and press **Connect** next to Claude Code or Codex.
+It also adds a `/gitui` command (`/prompts:gitui` in Codex). Restart the agent after.
+
+**One command** (if you prefer the terminal):
+
+```sh
+# macOS
+claude mcp add --scope user osgitui -- "/Applications/OS GitUI.app/Contents/MacOS/the-os-gitui" mcp
+codex mcp add osgitui -- "/Applications/OS GitUI.app/Contents/MacOS/the-os-gitui" mcp
+
+# Linux (.deb / .rpm)
+claude mcp add --scope user osgitui -- /usr/bin/the-os-gitui mcp
+codex mcp add osgitui -- /usr/bin/the-os-gitui mcp
+
+# Windows (PowerShell, default install folder)
+claude mcp add --scope user osgitui -- "$env:LOCALAPPDATA\OS GitUI\the-os-gitui.exe" mcp
+codex mcp add osgitui -- "$env:LOCALAPPDATA\OS GitUI\the-os-gitui.exe" mcp
+```
+
+Then just ask: *"open this in OS GitUI"*. A running window opens the repo in a new tab.
+
 ## Stack
 
 | Part | Choice |
